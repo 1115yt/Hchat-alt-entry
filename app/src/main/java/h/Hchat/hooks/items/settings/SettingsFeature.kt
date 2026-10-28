@@ -28,10 +28,11 @@ class SettingsFeature : Feature {
 
     @Throws(Throwable::class)
     override fun install(context: FeatureContext) {
-        // WCHAT-EXPERIMENT-A: settings-entry injection disabled to isolate startup abort
-        if (true) return
-        DexInstallScheduler.runDexKitTask {
+        // WCHAT-FIX: do not run DexKit + dynamic-proxy generation + hook install
+        // inside FeatureManager.installAll; that path aborted ART (checkpoint flag).
+        DexInstallScheduler.schedule("settings_entry", "设置入口", DexInstallScheduler.Stage.BRIDGE) {
             installSettingsHook(context)
+            true
         }
     }
 
