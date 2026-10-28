@@ -132,7 +132,7 @@ object DexInstallScheduler {
             // WCHAT-CRASH-FIX: hook install must run on the main thread.
             // Installing from worker/Binder threads aborted ART in 8.0.79
             // ("Transitioning to runnable with checkpoint flag").
-            mainHandler.post { executor.execute(future) }
+            mainHandler.post { future.run() }
         } catch (error: Throwable) {
             state.future = null
             state.running.set(false)
