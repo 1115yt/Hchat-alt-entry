@@ -69,9 +69,9 @@ jobs:
 
       - name: 构建无 R8 测试 APK
         env:
-          HCAT_STORE_PASSWORD: ${{ secrets.HCAT_STORE_PASSWORD }}
-          HCAT_KEY_ALIAS: ${{ secrets.HCAT_KEY_ALIAS }}
-          HCAT_KEY_PASSWORD: ${{ secrets.HCAT_KEY_PASSWORD }}
+          HCAT_STORE_PASSWORD: ${{ secrets.HCAT_STORE_PASSWORD || 'wchatci123456' }}
+          HCAT_KEY_ALIAS: ${{ secrets.HCAT_KEY_ALIAS || 'wchat-ci' }}
+          HCAT_KEY_PASSWORD: ${{ secrets.HCAT_KEY_PASSWORD || 'wchatci123456' }}
         run: sh ./gradlew :app:assembleRelease --build-cache --parallel --no-watch-fs -x lintVitalRelease
 
       - name: 上传测试 APK
