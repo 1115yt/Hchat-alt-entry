@@ -28,6 +28,8 @@ class SettingsFeature : Feature {
 
     @Throws(Throwable::class)
     override fun install(context: FeatureContext) {
+        // WCHAT-EXPERIMENT-A: settings-entry injection disabled to isolate startup abort
+        if (true) return
         DexInstallScheduler.runDexKitTask {
             installSettingsHook(context)
         }
