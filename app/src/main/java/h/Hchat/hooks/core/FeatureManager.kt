@@ -41,6 +41,7 @@ class FeatureManager {
             }
         }
 
+        // WCHAT-STRUCTURAL: installAll only registers; hook installation runs on scheduler.
         for (feature in initializedFeatures) {
             val displayName = safeName(feature)
             try {
@@ -50,16 +51,19 @@ class FeatureManager {
             } catch (e: Throwable) {
                 HLog.e("$TAG isEnabled 检查异常，默认启用: $displayName", e)
             }
-
-            try {
-                feature.install(context)
-                installedFeatures.add(feature)
+            DexInstallScheduler.schedule("feature:$displayName", displayName, DexInstallScheduler.Stage.BRIDGE) {
                 try {
-                    context.eventBus().post(Events.FeatureInstalled(displayName))
-                } catch (_: Throwable) {
+                    feature.install(context)
+                    installedFeatures.add(feature)
+                    try {
+                        context.eventBus().post(Events.FeatureInstalled(displayName))
+                    } catch (_: Throwable) {
+                    }
+                    true
+                } catch (e: Throwable) {
+                    HLog.e("$TAG 功能安装失败: $displayName, error=$e", e)
+                    false
                 }
-            } catch (e: Throwable) {
-                HLog.e("$TAG 功能安装失败: $displayName, error=$e", e)
             }
         }
         DexInstallScheduler.markDexBridgeReady()
