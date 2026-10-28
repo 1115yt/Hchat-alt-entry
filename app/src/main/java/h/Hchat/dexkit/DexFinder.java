@@ -2989,6 +2989,25 @@ public class DexFinder {
         return count;
     }
 
+    /** 8.0.79: 时间方法在别的类里，不能按插入方法所属类查找。用稳定日志锚点定位。 */
+    private void resolveCreateTimeByAnchor() {
+        if (localMessageCreateTimeMethod != null) return;
+        try {
+            List<MethodData> list = dexKit.findMethod(mkMethodUsingStrings("MicroMsg.MsgInfoStorageLogic"));
+            for (MethodData data : list) {
+                Method m = data.getMethodInstance(classLoader);
+                if (m == null || !KavaReflector.isStatic(m)) continue;
+                if (m.getReturnType() != long.class) continue;
+                Class<?>[] p = m.getParameterTypes();
+                if (p.length != 2 || p[0] != String.class || p[1] != long.class) continue;
+                localMessageCreateTimeMethod = KavaReflector.accessible(m);
+                return;
+            }
+        } catch (Throwable e) {
+            h.Hchat.utils.HLog.e(TAG + " resolveCreateTimeByAnchor 失败: " + e.getMessage(), e);
+        }
+    }
+
     private void resolveLocalSystemMessageMethod() {
         if (localSystemMessageMethod != null) return;
         try {
@@ -3003,6 +3022,7 @@ public class DexFinder {
                     Method method = methodData.getMethodInstance(classLoader);
                     if (!isLocalSystemMessageMethod(method)) continue;
                     localSystemMessageMethod = KavaReflector.accessible(method);
+        resolveCreateTimeByAnchor();
                     break;
                 } catch (Throwable ignored) {}
             }
