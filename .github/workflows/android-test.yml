@@ -56,8 +56,13 @@ jobs:
         run: |
           set -e
           if [ -z "$HCAT_KEYSTORE_BASE64" ]; then
-            echo "Missing secret: HCAT_KEYSTORE_BASE64"
-            exit 1
+            echo "no keystore secret -> generating throwaway CI key"
+            mkdir -p app/keystore
+            keytool -genkeypair -keystore "app/keystore/。。.jks" -storetype PKCS12 -alias wchat-ci -keyalg RSA -keysize 2048 -validity 10000 -storepass wchatci123456 -keypass wchatci123456 -dname "CN=Wchat CI Test,O=Local,C=CN"
+            echo "HCAT_STORE_PASSWORD=wchatci123456" >> $GITHUB_ENV
+            echo "HCAT_KEY_ALIAS=wchat-ci" >> $GITHUB_ENV
+            echo "HCAT_KEY_PASSWORD=wchatci123456" >> $GITHUB_ENV
+            exit 0
           fi
           mkdir -p app/keystore
           echo "$HCAT_KEYSTORE_BASE64" | base64 -d > app/keystore/。。.jks
