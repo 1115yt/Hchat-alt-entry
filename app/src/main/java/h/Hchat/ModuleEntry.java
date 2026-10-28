@@ -78,10 +78,11 @@ public class ModuleEntry implements IXposedHookLoadPackage {
         }
 
         // 热更新加载发生在 Tinker attach 阶段，必须早于普通功能初始化安装。
-        installHotUpdateEarlyHook(lpparam);
+// WCHAT-BATCH: early hook installs disabled (ART checkpoint abort on 8.0.79)
+        //         installHotUpdateEarlyHook(lpparam);
 
         // 平板模式需要在微信所有进程保持一致，避免升级/降级后登录态校验看到不同设备形态。
-        installTabletEarlyHook(lpparam);
+// WCHAT-BATCH:         installTabletEarlyHook(lpparam);
 
         // 2. 子进程只安装明确需要的最小 Hook。
         if (!isMainProcess(lpparam)) {
@@ -119,18 +120,18 @@ public class ModuleEntry implements IXposedHookLoadPackage {
                             CrashReportRuntime.install(app, ModuleEntry.this.getClass().getClassLoader());
                             // 标签栏先捕获首页根视图，不能等待后台 DexKit 初始化后再挂载。
                             try {
-                                ConversationTabsFeature.installEarly(resolveHostClassLoader(app, lpparam));
+// WCHAT-BATCH:                                 ConversationTabsFeature.installEarly(resolveHostClassLoader(app, lpparam));
                             } catch (Throwable e) {
                                 HLog.e(TAG + " 标签分组早期安装失败", e);
                             }
                             // 悬浮入口不依赖 DexKit，先注册生命周期，避免错过首个 Activity。
                             try {
-                                FloatingShortcutRuntime.INSTANCE.install(app);
+// WCHAT-BATCH:                                 FloatingShortcutRuntime.INSTANCE.install(app);
                             } catch (Throwable e) {
                                 HLog.e(TAG + " 悬浮快捷菜单早期安装失败", e);
                             }
                         }
-                        installCustomBottomBarEarly(app, resolveHostClassLoader(app, lpparam));
+// WCHAT-BATCH:                         installCustomBottomBarEarly(app, resolveHostClassLoader(app, lpparam));
                         new Thread(() -> initModule(app, lpparam), "Hchat-Init").start();
                     }
                 }
