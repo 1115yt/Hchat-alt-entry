@@ -450,7 +450,17 @@ public class ModuleEntry implements IXposedHookLoadPackage {
 
                 // 6. 注册并安装所有功能模块
                 featureManager = FeatureRegistry.createDefaultManager();
-                featureManager.installAll(featureContext);
+                final h.Hchat.hooks.core.FeatureManager wchatFeatures = featureManager;
+                final h.Hchat.hooks.core.FeatureContext wchatCtx = featureContext;
+                // WCHAT-ROOT-FIX: run feature installs OUTSIDE the DexKit lock;
+                // hook installs inside runDexKitTask aborted ART on 8.0.79.
+                new Thread(() -> {
+                    try {
+                        wchatFeatures.installAll(wchatCtx);
+                    } catch (Throwable wchatError) {
+                        HLog.e(TAG + " feature install failed: " + wchatError, wchatError);
+                    }
+                }, "Hchat-Features").start();
 
                 // codex 网页版保活：微信进程重启后把上次开着的服务自动拉回来
                 CodexWebGuard.INSTANCE.restore(hostContext);
